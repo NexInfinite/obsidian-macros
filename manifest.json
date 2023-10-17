@@ -1,11 +1,11 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
+	"id": "obsidian-macros",
+	"name": "Obsidian Macros",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "This is a sample plugin for Obsidian. This plugin demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+	"description": "Another macro plugin that allows for customizable macros for repetitive tasks, basically just another copy paster!",
+	"author": "Nexin",
+	"authorUrl": "https://github.com/NexInfinite/obsidian-macros",
+	"fundingUrl": "https://paypal.me/julianjones663",
+	"isDesktopOnly": true
 }
