@@ -2,10 +2,16 @@ import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Set
 
 interface PluginSettings {
 	mySetting: string;
+	exampleMacro: string;
+	exampleMacroHotkey: string;
+	exampleMacroToggled: boolean;
 }
 
 const DEFAULT_SETTINGS: PluginSettings = {
-	mySetting: 'default'
+	mySetting: 'default',
+	exampleMacro: "ß",
+	exampleMacroHotkey: "ctrl+alt+l",
+	exampleMacroToggled: true
 }
 
 export default class ObsidianMacrosPlugin extends Plugin {
@@ -14,7 +20,7 @@ export default class ObsidianMacrosPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
-		this.addRibbonIcon("dice", "Greet", () => {
+		this.addRibbonIcon("keyboard", "Obsidian Macros Welcome", () => {
 			new Notice("Hello World :3");
 			new Notice("If you're seeing this then I may have forgotten to delete it")
 		});
@@ -24,10 +30,16 @@ export default class ObsidianMacrosPlugin extends Plugin {
 		
 		this.addSettingTab(new SettingsTab(this.app, this));
 		
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
-			statusBarItemEl.setText('Pasted {}');
-		});
+		this.registerDomEvent(document, "keydown", (event: KeyboardEvent) => {
+			if (this.settings.exampleMacroToggled) {
+				statusBarItemEl.setText(`Pressed ${event.key}`);
+				console.log("key", event);
+			}
+		})
+		// this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
+		// 	console.log('click', evt);
+		// 	statusBarItemEl.setText('Pasted {}');
+		// });
 	}
 
 	async loadSettings() {
@@ -36,22 +48,6 @@ export default class ObsidianMacrosPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-	}
-}
-
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
-
-	onOpen() {
-		const {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
-
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
 	}
 }
 
@@ -69,13 +65,26 @@ class SettingsTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
+			.setName("Macro Example")
+			.setDesc("Example macro before customizability")
 			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
+				.setPlaceholder("Enter something to paste")
+				.setValue(this.plugin.settings.exampleMacro)
 				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
+					this.plugin.settings.exampleMacro = value;
+					await this.plugin.saveSettings();
+				}))
+			.addText(text => text
+				.setPlaceholder("Enter a hotkey binding ('ctrl+shift+z' for example)")
+				.setValue(this.plugin.settings.exampleMacroHotkey)
+				.onChange(async (value) => {
+					this.plugin.settings.exampleMacroHotkey = value;
+					await this.plugin.saveSettings();
+				}))
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.exampleMacroToggled)
+				.onChange(async (value) => {
+					this.plugin.settings.exampleMacroToggled = value;
 					await this.plugin.saveSettings();
 				}));
 	}
