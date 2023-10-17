@@ -1,2 +1,2 @@
-# obsidian-macros
-A macro plugin for obsidian so I can type german characters
+# Obsidian Macros
+Haven't finished this fully yet but it should allow me to write macros so that I can type hotkeys and copy paste code/special characters (like German ones). Hopefully it is fully modular!
