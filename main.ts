@@ -1,45 +1,45 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 interface PluginSettings {
 	mySetting: string;
-	exampleMacro: string;
-	exampleMacroHotkey: string;
-	exampleMacroToggled: boolean;
+	exampleMacro: {"value": string, "macroString": string, "macro": Array<String>, "enabled": boolean}
 }
 
 const DEFAULT_SETTINGS: PluginSettings = {
 	mySetting: 'default',
-	exampleMacro: "ß",
-	exampleMacroHotkey: "ctrl+alt+l",
-	exampleMacroToggled: true
+	exampleMacro: {"value": "ß", "macroString": "ctrl+alt+l", "macro": ["ctrl", "alt", "left"], "enabled": true},
 }
 
 export default class ObsidianMacrosPlugin extends Plugin {
 	settings: PluginSettings;
+	keyPresses: Array<KeyboardEvent>
 
 	async onload() {
-		await this.loadSettings();
+		console.log("LOADED OBSIDIAN MACROS");
+		console.log("PRIVACY NOTICE: This plugin can see your last keypresses but everything is stored locally!")
 
+		await this.loadSettings();
+		this.addSettingTab(new SettingsTab(this.app, this));
+		const statusBarItemEl = this.addStatusBarItem();
+		
 		this.addRibbonIcon("keyboard", "Obsidian Macros Welcome", () => {
 			new Notice("Hello World :3");
 			new Notice("If you're seeing this then I may have forgotten to delete it")
 		});
-
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
 		
-		this.addSettingTab(new SettingsTab(this.app, this));
-		
+		this.keyPresses = []
 		this.registerDomEvent(document, "keydown", (event: KeyboardEvent) => {
-			if (this.settings.exampleMacroToggled) {
+			if (this.settings.exampleMacro.value) {
+				if (this.keyPresses.length < 5) {
+					this.keyPresses.push(event)
+				} else {
+					this.keyPresses.pop()
+					this.keyPresses.push(event)
+				}
 				statusBarItemEl.setText(`Pressed ${event.key}`);
-				console.log("key", event);
+				console.log(this.keyPresses);
 			}
 		})
-		// this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-		// 	console.log('click', evt);
-		// 	statusBarItemEl.setText('Pasted {}');
-		// });
 	}
 
 	async loadSettings() {
@@ -61,30 +61,39 @@ class SettingsTab extends PluginSettingTab {
 
 	display(): void {
 		const {containerEl} = this;
-
 		containerEl.empty();
+
+		let heading = document.createElement("h1");
+		let help = document.createElement("p");
+		heading.innerHTML = "Macros";
+		help.innerHTML = "NOTE: Max macro amount is 5 keys";
+		help.style.fontSize = "1rem";
+		help.style.color = "orangered";
+		containerEl.appendChild(heading);
+		containerEl.appendChild(help);
 
 		new Setting(containerEl)
 			.setName("Macro Example")
 			.setDesc("Example macro before customizability")
 			.addText(text => text
 				.setPlaceholder("Enter something to paste")
-				.setValue(this.plugin.settings.exampleMacro)
+				.setValue(this.plugin.settings.exampleMacro.value)
 				.onChange(async (value) => {
-					this.plugin.settings.exampleMacro = value;
+					this.plugin.settings.exampleMacro.value = value;
 					await this.plugin.saveSettings();
 				}))
 			.addText(text => text
 				.setPlaceholder("Enter a hotkey binding ('ctrl+shift+z' for example)")
-				.setValue(this.plugin.settings.exampleMacroHotkey)
+				.setValue(this.plugin.settings.exampleMacro.macroString)
 				.onChange(async (value) => {
-					this.plugin.settings.exampleMacroHotkey = value;
+					this.plugin.settings.exampleMacro.macroString = value;
+					this.plugin.settings.exampleMacro.macro = value.split("+");
 					await this.plugin.saveSettings();
 				}))
 			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.exampleMacroToggled)
+				.setValue(this.plugin.settings.exampleMacro.enabled)
 				.onChange(async (value) => {
-					this.plugin.settings.exampleMacroToggled = value;
+					this.plugin.settings.exampleMacro.enabled = value;
 					await this.plugin.saveSettings();
 				}));
 	}
