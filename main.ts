@@ -1,4 +1,4 @@
-import { App, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Notice, Plugin, PluginSettingTab, Setting, MarkdownView } from 'obsidian';
 
 let MAX_KEYS_STORED = 5
 
@@ -44,8 +44,19 @@ export default class ObsidianMacrosPlugin extends Plugin {
 					this.keyPresses.push(event)
 				}
 
-				checkMacroMatch(this.settings.exampleMacro.macro, this.keyPresses);
-				console.log(this.keyPresses);
+				if (checkMacroMatch(this.settings.exampleMacro.macro, this.keyPresses)) {
+					console.log(`MACRO MATCHED! '${this.settings.exampleMacro.macroString}' will now write '${this.settings.exampleMacro.value}'`);
+					this.keyPresses = [];
+
+					const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+					if (view) {
+						view.editor.replaceRange(
+							this.settings.exampleMacro.value,
+							view.editor.getCursor()
+						);
+						view.editor.setCursor(view.editor.getCursor().ch + this.settings.exampleMacro.value.length);
+					};
+				};
 			}
 		})
 	}
