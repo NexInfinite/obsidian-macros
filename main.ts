@@ -1,11 +1,20 @@
 import { App, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
-interface PluginSettings {
-	exampleMacro: {"value": string, "macroString": string, "macro": Array<String>, "enabled": boolean}
+let MAX_KEYS_STORED = 5
+
+interface MacroSetting {
+	value: string,
+	macroString: string,
+	macro: Array<String>,
+	enabled: boolean
 }
 
-const DEFAULT_SETTINGS: PluginSettings = {
-	exampleMacro:  {"value": "ß", "macroString": "ctrl+alt+l", "macro": ["ctrl", "alt", "left"], "enabled": true},
+interface PluginSettings {
+	exampleMacro: MacroSetting
+}
+
+const SETTINGS: PluginSettings = {
+	exampleMacro: {value: "agh", macroString: "ctrl+shift+alt", macro: ["ctrl", "shift", "alt"], enabled: true},
 }
 
 export default class ObsidianMacrosPlugin extends Plugin {
@@ -28,20 +37,21 @@ export default class ObsidianMacrosPlugin extends Plugin {
 		this.keyPresses = []
 		this.registerDomEvent(document, "keydown", (event: KeyboardEvent) => {
 			if (this.settings.exampleMacro.value) {
-				if (this.keyPresses.length < 5) {
+				if (this.keyPresses.length < MAX_KEYS_STORED) {
 					this.keyPresses.push(event)
 				} else {
-					this.keyPresses.pop()
+					this.keyPresses.shift()
 					this.keyPresses.push(event)
 				}
-				statusBarItemEl.setText(`Pressed ${event.key}`);
+
+				checkMacroMatch(this.settings.exampleMacro.macro, this.keyPresses);
 				console.log(this.keyPresses);
 			}
 		})
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		this.settings = Object.assign({}, SETTINGS, await this.loadData());
 	}
 
 	async saveSettings() {
@@ -70,8 +80,6 @@ class SettingsTab extends PluginSettingTab {
 		containerEl.appendChild(heading);
 		containerEl.appendChild(help);
 
-		console.log(this.plugin.settings.exampleMacro)
-
 		new Setting(containerEl)
 			.setName("Macro Example")
 			.setDesc("Example macro before customizability")
@@ -97,4 +105,21 @@ class SettingsTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 	}
+}
+
+function checkMacroMatch(macro: Array<String>, keyHistory: KeyboardEvent[]) {
+	for (let key = 0; key < keyHistory.length; key++) {
+		if (keyHistory.length - key >= macro.length) {
+			let valid = true;
+			for (let macroKey = 0; macroKey < macro.length; macroKey++) {
+				if (macro[macroKey].toLowerCase() != keyHistory[key + macroKey].key.toLowerCase()) {
+					valid = false;
+					break;
+				}
+			}
+			if (valid) 
+				return true;
+		}
+	}
+	return false;
 }
