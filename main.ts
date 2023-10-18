@@ -1,13 +1,11 @@
 import { App, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 interface PluginSettings {
-	mySetting: string;
 	exampleMacro: {"value": string, "macroString": string, "macro": Array<String>, "enabled": boolean}
 }
 
 const DEFAULT_SETTINGS: PluginSettings = {
-	mySetting: 'default',
-	exampleMacro: {"value": "ß", "macroString": "ctrl+alt+l", "macro": ["ctrl", "alt", "left"], "enabled": true},
+	exampleMacro:  {"value": "ß", "macroString": "ctrl+alt+l", "macro": ["ctrl", "alt", "left"], "enabled": true},
 }
 
 export default class ObsidianMacrosPlugin extends Plugin {
@@ -71,6 +69,8 @@ class SettingsTab extends PluginSettingTab {
 		help.style.color = "orangered";
 		containerEl.appendChild(heading);
 		containerEl.appendChild(help);
+
+		console.log(this.plugin.settings.exampleMacro)
 
 		new Setting(containerEl)
 			.setName("Macro Example")
