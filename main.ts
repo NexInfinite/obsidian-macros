@@ -54,7 +54,7 @@ export default class ObsidianMacrosPlugin extends Plugin {
 							this.settings.exampleMacro.value,
 							view.editor.getCursor()
 						);
-						view.editor.setCursor(view.editor.getCursor().ch + this.settings.exampleMacro.value.length);
+						view.editor.setCursor(view.editor.getCursor().ch);
 					};
 				};
 			}
